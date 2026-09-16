@@ -2,24 +2,23 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { lazy, Suspense } from "react";
 import NotFound from "@/pages/NotFound";
-import { Route, Router as WouterRouter, Switch } from "wouter";
+import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 const SalesDashboard = lazy(() => import("./pages/SalesDashboard"));
+const pagesBase = import.meta.env.BASE_URL === "/" ? "" : import.meta.env.BASE_URL.replace(/\/$/, "");
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
-    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-      <Switch>
-        <Route path={"/"} component={Home} />
-        <Route path={"/sales"} component={SalesDashboard} />
-        <Route path={"/404"} component={NotFound} />
-        {/* Final fallback route */}
-        <Route component={NotFound} />
-      </Switch>
-    </WouterRouter>
+    <Switch>
+      <Route path={pagesBase || "/"} component={Home} />
+      <Route path={`${pagesBase}/sales`} component={SalesDashboard} />
+      <Route path={`${pagesBase}/404`} component={NotFound} />
+      {/* Final fallback route */}
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
