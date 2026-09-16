@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import {
   ArrowLeft,
   ArrowUpLeft,
@@ -75,6 +75,8 @@ export default function Home() {
   const [selectedPlan, setSelectedPlan] = useState("family");
   const [demoStep, setDemoStep] = useState(0);
   const [language, setLanguage] = useState<"ar" | "en">("ar");
+  const [productTilt, setProductTilt] = useState({ x: 0, y: 0 });
+  const [activeHotspot, setActiveHotspot] = useState<"sensor" | "screen" | "alerts" | null>(null);
   const english = language === "en";
   const createOrder = trpc.orders.create.useMutation();
 
@@ -154,9 +156,27 @@ export default function Home() {
           <div className="hero-visual reveal-up delay-one">
             <div className="visual-orbit orbit-one" />
             <div className="visual-orbit orbit-two" />
-            <div className="hero-image-card">
-              <div className="card-sheen" />
-              <img src={productImage} alt="جهاز لا تتركني لمراقبة حرارة السيارة وحماية الأطفال" fetchPriority="high" />
+            <div
+              className="product-3d-stage"
+              onPointerMove={(event) => {
+                const rect = event.currentTarget.getBoundingClientRect();
+                setProductTilt({ x: ((event.clientY - rect.top) / rect.height - 0.5) * -10, y: ((event.clientX - rect.left) / rect.width - 0.5) * 12 });
+              }}
+              onPointerLeave={() => setProductTilt({ x: 0, y: 0 })}
+              onPointerDown={(event) => event.currentTarget.setPointerCapture(event.pointerId)}
+              style={{ "--tilt-x": `${productTilt.x}deg`, "--tilt-y": `${productTilt.y}deg` } as CSSProperties}
+              aria-label={english ? "Interactive 3D product view" : "عرض تفاعلي ثلاثي الأبعاد للمنتج"}
+            >
+              <div className="product-depth-shadow" />
+              <div className="hero-image-card">
+                <div className="card-sheen" />
+                <img src={productImage} alt="جهاز لا تتركني لمراقبة حرارة السيارة وحماية الأطفال" fetchPriority="high" />
+                <span className="product-edge edge-top" /><span className="product-edge edge-bottom" />
+              </div>
+              <button className={`product-hotspot hotspot-sensor ${activeHotspot === "sensor" ? "is-active" : ""}`} onClick={() => setActiveHotspot(activeHotspot === "sensor" ? null : "sensor")} aria-label={english ? "Show sensor information" : "عرض معلومات الحساسات"}><span>+</span><i>{english ? "Smart sensors" : "حساسات ذكية"}</i></button>
+              <button className={`product-hotspot hotspot-screen ${activeHotspot === "screen" ? "is-active" : ""}`} onClick={() => setActiveHotspot(activeHotspot === "screen" ? null : "screen")} aria-label={english ? "Show screen information" : "عرض معلومات الشاشة"}><span>+</span><i>{english ? "Live reading" : "قراءة لحظية"}</i></button>
+              <button className={`product-hotspot hotspot-alerts ${activeHotspot === "alerts" ? "is-active" : ""}`} onClick={() => setActiveHotspot(activeHotspot === "alerts" ? null : "alerts")} aria-label={english ? "Show alert information" : "عرض معلومات التنبيهات"}><span>+</span><i>{english ? "Instant alerts" : "تنبيهات فورية"}</i></button>
+              <div className="product-3d-hint"><span className="drag-orbit-icon">↻</span>{english ? "Move to explore · tap the points" : "حرّك لاستكشاف التفاصيل · اضغط على النقاط"}</div>
             </div>
             <div className="floating-status status-temp">
               <span className="status-icon orange-icon"><Thermometer size={18} /></span>
