@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowUpLeft,
@@ -57,6 +57,12 @@ const steps = [
   { number: "03", title: "اطمئن أكثر", text: "استقبل التنبيهات واتخذ القرار في الوقت المناسب." },
 ];
 
+const plans = [
+  { id: "single", label: "للتجربة", name: "جهاز واحد", price: "249", oldPrice: "299", note: "مناسب لسيارة واحدة", accent: "soft", features: ["جهاز مراقبة الحرارة", "تنبيهات التطبيق", "ضمان سنة"] },
+  { id: "family", label: "الأكثر طلبًا", name: "باقة العائلة", price: "449", oldPrice: "598", note: "جهازان بسعر أوفر", accent: "featured", features: ["جهازان لمراقبة سيارتين", "تنبيهات التطبيق", "ضمان سنة + شحن مجاني"] },
+  { id: "plus", label: "لراحة أكبر", name: "باقة العائلة بلس", price: "599", oldPrice: "747", note: "ثلاثة أجهزة للعائلة", accent: "premium", features: ["ثلاثة أجهزة ذكية", "أولوية دعم العملاء", "ضمان ممتد + شحن مجاني"] },
+];
+
 function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -65,6 +71,13 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showOrder, setShowOrder] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("family");
+  const [demoStep, setDemoStep] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setDemoStep((step) => (step + 1) % 3), 3600);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const navigate = (id: string) => {
     setMenuOpen(false);
@@ -93,6 +106,7 @@ export default function Home() {
           </button>
 
           <nav className={`nav-links ${menuOpen ? "is-open" : ""}`} aria-label="التنقل الرئيسي">
+            <button onClick={() => navigate("pricing")}>الباقات</button>
             <button onClick={() => navigate("features")}>المزايا</button>
             <button onClick={() => navigate("how-it-works")}>كيف يعمل؟</button>
             <button onClick={() => navigate("faq")}>الأسئلة الشائعة</button>
@@ -154,6 +168,31 @@ export default function Home() {
           <div className="signal-item"><BellRing size={22} /><span><strong>تنبيهات فورية</strong><small>عند ارتفاع الحرارة أو الخطر</small></span></div>
           <div className="signal-item"><Bluetooth size={22} /><span><strong>اتصال ذكي</strong><small>بلوتوث وواي فاي</small></span></div>
           <div className="signal-item"><CloudSun size={22} /><span><strong>مصمم للواقع</strong><small>يتحمل حرارة السيارة</small></span></div>
+        </div>
+      </section>
+
+      <section id="pricing" className="section pricing-section">
+        <div className="container">
+          <div className="section-heading centered-heading"><div className="section-kicker">اختر مستوى الاطمئنان <span /></div><h2>باقة تناسب<br /><span>كل عائلة.</span></h2><p>ابدأ بحماية سيارة واحدة، أو اجعل كل سيارات العائلة تحت المراقبة.</p></div>
+          <div className="pricing-grid">
+            {plans.map((plan) => (
+              <article className={`pricing-card ${plan.accent} ${selectedPlan === plan.id ? "is-selected" : ""}`} key={plan.id}>
+                {plan.accent === "featured" && <div className="popular-pill">الأكثر اختيارًا <span>★</span></div>}
+                <div className="pricing-label">{plan.label}</div><h3>{plan.name}</h3><p className="pricing-note">{plan.note}</p>
+                <div className="price-line"><strong>{plan.price}</strong><span>ر.س</span><del>{plan.oldPrice} ر.س</del></div><div className="vat-note">شامل الضريبة · شحن مجاني للباقة العائلية</div>
+                <ul>{plan.features.map((feature) => <li key={feature}><Check size={15} /> {feature}</li>)}</ul>
+                <button className={plan.accent === "featured" ? "primary-btn" : "pricing-btn"} onClick={() => { setSelectedPlan(plan.id); setShowOrder(true); }}>اختيار الباقة <ArrowLeft size={16} /></button>
+              </article>
+            ))}
+          </div>
+          <div className="pricing-footnote"><ShieldCheck size={16} /> دفع آمن عند الاستلام · استبدال خلال 7 أيام · دعم عربي</div>
+        </div>
+      </section>
+
+      <section className="demo-section">
+        <div className="container demo-grid">
+          <div className="demo-copy"><div className="section-kicker">شاهد الفكرة في ثوانٍ <span /></div><h2>من قراءة هادئة…<br /><span>إلى تنبيه واضح.</span></h2><p>تتغير واجهة الجهاز والتطبيق حسب حالة السيارة، لتعرف ما يحدث دون قراءة تفاصيل معقدة.</p><div className="demo-tabs" role="tablist" aria-label="مراحل عمل الجهاز">{["مراقبة الحرارة", "رصد الحالة", "تنبيه فوري"].map((label, index) => <button key={label} className={demoStep === index ? "active" : ""} onClick={() => setDemoStep(index)}><span>0{index + 1}</span>{label}</button>)}</div></div>
+          <div className={`demo-device-stage step-${demoStep}`} aria-live="polite"><div className="demo-radar radar-a" /><div className="demo-radar radar-b" /><div className="demo-device"><div className="device-led" /><div className="device-screen"><Thermometer size={27} /><strong>{demoStep === 2 ? "41" : demoStep === 1 ? "32" : "28"}°</strong><span>{demoStep === 2 ? "حرارة مرتفعة" : demoStep === 1 ? "السيارة آمنة" : "مراقبة مستمرة"}</span></div><div className="device-grille" /></div><div className="demo-phone"><div className="phone-top" /><div className="phone-alert-icon">{demoStep === 2 ? <BellRing size={21} /> : <CircleCheck size={21} />}</div><small>{demoStep === 2 ? "تنبيه عاجل" : "حالة السيارة"}</small><strong>{demoStep === 2 ? "تحقق من السيارة الآن" : demoStep === 1 ? "لا يوجد أطفال" : "درجة الحرارة مستقرة"}</strong><div className="phone-progress"><span /></div></div><div className="demo-caption"><span className="live-dot" /> {demoStep === 2 ? "تم إرسال التنبيه إلى هاتفك" : "الجهاز يعمل في الخلفية"}</div></div>
         </div>
       </section>
 
@@ -224,7 +263,7 @@ export default function Home() {
         <div className="container footer-inner"><div className="brand footer-brand"><span className="brand-mark"><ShieldCheck size={21} strokeWidth={2.4} /></span><span className="brand-copy"><strong>لا تتركني</strong><small>حماية أذكى لأطفالك</small></span></div><p>سلامة أطفالك أولًا، في كل طريق.</p><div className="footer-meta"><span>© 2026 لا تتركني</span><span>صنع بعناية للعائلات</span></div></div>
       </footer>
 
-      {showOrder && <div className="modal-backdrop" role="presentation" onClick={() => setShowOrder(false)}><div className="order-modal" role="dialog" aria-modal="true" aria-labelledby="order-title" onClick={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setShowOrder(false)} aria-label="إغلاق"><X size={20} /></button>{submitted ? <div className="success-state"><span className="success-icon"><Check size={30} /></span><h2>وصلنا طلبك</h2><p>سيتواصل معك فريق «لا تتركني» قريبًا لتأكيد التفاصيل.</p><button className="primary-btn" onClick={() => { setSubmitted(false); setShowOrder(false); }}>حسنًا</button></div> : <><div className="section-kicker">خطوة نحو اطمئنان أكبر <span /></div><h2 id="order-title">احجز جهازك الآن</h2><p>اترك بياناتك وسنتواصل معك لتأكيد الطلب.</p><form onSubmit={(event) => { event.preventDefault(); setSubmitted(true); }}><label>الاسم الكامل<input required placeholder="اكتب اسمك" /></label><label>رقم الجوال<input required type="tel" placeholder="05X XXX XXXX" /></label><label>المدينة<select defaultValue=""><option value="" disabled>اختر المدينة</option><option>الرياض</option><option>جدة</option><option>الدمام</option><option>أخرى</option></select></label><button className="primary-btn form-submit" type="submit">إرسال الطلب <ArrowLeft size={18} /></button></form></>}</div></div>}
+      {showOrder && <div className="modal-backdrop" role="presentation" onClick={() => setShowOrder(false)}><div className="order-modal" role="dialog" aria-modal="true" aria-labelledby="order-title" onClick={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setShowOrder(false)} aria-label="إغلاق"><X size={20} /></button>{submitted ? <div className="success-state"><span className="success-icon"><Check size={30} /></span><h2>تم تجهيز رسالتك</h2><p>فتحنا واتساب برسالة جاهزة لفريق «لا تتركني». أرسلها لتأكيد الطلب.</p><button className="primary-btn" onClick={() => { setSubmitted(false); setShowOrder(false); }}>حسنًا</button></div> : <><div className="section-kicker">خطوة نحو اطمئنان أكبر <span /></div><h2 id="order-title">احجز جهازك الآن</h2><p>اختر الباقة واترك بياناتك، وسنتواصل معك عبر واتساب لتأكيد التفاصيل.</p><div className="modal-plan"><span>الباقة المختارة</span><strong>{plans.find((plan) => plan.id === selectedPlan)?.name}</strong></div><form onSubmit={(event) => { event.preventDefault(); const form = event.currentTarget; const data = new FormData(form); const planName = plans.find((plan) => plan.id === selectedPlan)?.name ?? "الباقة العائلية"; const message = `مرحبًا، أريد طلب ${planName}. الاسم: ${data.get("name")}، الجوال: ${data.get("phone")}، المدينة: ${data.get("city")}`; window.open(`https://wa.me/966500000000?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer"); setSubmitted(true); }}><label>الاسم الكامل<input name="name" required placeholder="اكتب اسمك" /></label><label>رقم الجوال<input name="phone" required type="tel" placeholder="05X XXX XXXX" /></label><label>المدينة<select name="city" defaultValue="" required><option value="" disabled>اختر المدينة</option><option>الرياض</option><option>جدة</option><option>الدمام</option><option>أخرى</option></select></label><button className="primary-btn form-submit" type="submit">إرسال الطلب عبر واتساب <ArrowLeft size={18} /></button></form></>}</div></div>}
     </main>
   );
 }
